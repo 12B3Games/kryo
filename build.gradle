@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'maven-publish'
     id 'signing'
     id 'com.github.johnrengelman.shadow' version '8.1.1' // for fat JAR (like maven-assembly-plugin)
 }
@@ -76,9 +75,7 @@ tasks.named('jar') {
 
 tasks.register('assembly', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     archiveClassifier.set('all')
-    from('.') {
-        includeEmptyDirs = false
-    }
+    from(sourceSets.main.output)
     configurations = [project.configurations.runtimeClasspath]
     manifest {
         attributes 'Main-Class': 'com.esotericsoftware.kryo.Kryo' // example
