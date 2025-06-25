@@ -23,10 +23,6 @@ import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.unsafe.UnsafeByteBufferInput;
-import com.esotericsoftware.kryo.unsafe.UnsafeByteBufferOutput;
-import com.esotericsoftware.kryo.unsafe.UnsafeInput;
-import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import com.esotericsoftware.minlog.Log;
 
 import java.io.Externalizable;
@@ -106,46 +102,6 @@ class SerializationBenchmarkTest extends KryoTestCase {
 		output.setVariableLengthEncoding(false);
 		run("ByteBufferOutputFixed", 1, WARMUP_ITERATIONS, output, input, false);
 		run("ByteBufferOutputFixed", RUN_CNT, ITER_CNT, output, input, true);
-	}
-
-	@Test
-	@Unsafe
-	void testUnsafeOutput () throws Exception {
-		UnsafeOutput output = new UnsafeOutput(OUTPUT_BUFFER_SIZE);
-		UnsafeInput input = new UnsafeInput(output.getBuffer());
-		run("UnsafeOutput", 1, WARMUP_ITERATIONS, output, input, false);
-		run("UnsafeOutput", RUN_CNT, ITER_CNT, output, input, true);
-	}
-
-	@Test
-	@Unsafe
-	void testUnsafeOutputFixed () throws Exception {
-		UnsafeOutput output = new UnsafeOutput(OUTPUT_BUFFER_SIZE);
-		UnsafeInput input = new UnsafeInput(output.getBuffer());
-		input.setVariableLengthEncoding(false);
-		output.setVariableLengthEncoding(false);
-		run("UnsafeOutputFixed", 1, WARMUP_ITERATIONS, output, input, false);
-		run("UnsafeOutputFixed", RUN_CNT, ITER_CNT, output, input, true);
-	}
-
-	@Test
-	@Unsafe
-	void testUnsafeByteBufferOutput () throws Exception {
-		UnsafeByteBufferOutput output = new UnsafeByteBufferOutput(OUTPUT_BUFFER_SIZE);
-		UnsafeByteBufferInput input = new UnsafeByteBufferInput(output.getByteBuffer());
-		run("UnsafeByteBufferOutput", 1, WARMUP_ITERATIONS, output, input, false);
-		run("UnsafeByteBufferOutput", RUN_CNT, ITER_CNT, output, input, true);
-	}
-
-	@Test
-	@Unsafe
-	void testUnsafeByteBufferOutputFixed () throws Exception {
-		UnsafeByteBufferOutput output = new UnsafeByteBufferOutput(OUTPUT_BUFFER_SIZE);
-		UnsafeByteBufferInput input = new UnsafeByteBufferInput(output.getByteBuffer());
-		input.setVariableLengthEncoding(false);
-		output.setVariableLengthEncoding(false);
-		run("UnsafeByteBufferOutputFixed", 1, WARMUP_ITERATIONS, output, input, false);
-		run("UnsafeByteBufferOutputFixed", RUN_CNT, ITER_CNT, output, input, true);
 	}
 
 	private void cleanUpAfterRun () throws InterruptedException {

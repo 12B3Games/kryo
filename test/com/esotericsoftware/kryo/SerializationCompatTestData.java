@@ -73,11 +73,6 @@ import java.util.concurrent.atomic.AtomicLong;
 class SerializationCompatTestData {
 
 	static class TestDataJava8 extends TestData {
-		private Optional<String> optionalString;
-		private OptionalInt optionalInt;
-		private OptionalLong optionalLong;
-		private OptionalDouble optionalDouble;
-
 		private Duration duration;
 		private Instant instant;
 		private LocalDate localDate;
@@ -93,11 +88,6 @@ class SerializationCompatTestData {
 		private Period period;
 
 		TestDataJava8 () {
-			optionalString = Optional.of("foo");
-			optionalInt = OptionalInt.of(42);
-			optionalLong = OptionalLong.of(42L);
-			optionalDouble = OptionalDouble.of(42d);
-
 			duration = Duration.ofSeconds(42, 23);
 			instant = Instant.ofEpochSecond(42);
 			localDate = LocalDate.of(2016, Month.MARCH, 1);
@@ -147,7 +137,6 @@ class SerializationCompatTestData {
 		private Integer[] _integerArray;
 		private Date _date;
 		private TimeZone _timeZone;
-		private Calendar _calendar;
 		private Locale _locale;
 		List<Charset> _charsets;
 		private URL _url;
@@ -217,10 +206,6 @@ class SerializationCompatTestData {
 			_integerArray = new Integer[] {13};
 
 			_date = new Date(42);
-			_calendar = Calendar.getInstance(Locale.ENGLISH);
-			_calendar.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
-			_calendar.set(2009, Calendar.JANUARY, 25, 10, 29, 0);
-			_calendar.set(Calendar.MILLISECOND, 0);
 
 			_timeZone = TimeZone.getTimeZone("America/Los_Angeles");
 			_locale = Locale.ENGLISH;
@@ -280,6 +265,9 @@ class SerializationCompatTestData {
 
 	static class Generic<T> {
 		T item;
+		
+		Generic() {
+		}
 
 		public Generic (final T item) {
 			this.item = item;
@@ -300,6 +288,9 @@ class SerializationCompatTestData {
 
 	static class GenericList<T> {
 		List<Generic<T>> generics;
+		
+		public GenericList() {
+		}
 
 		public GenericList (final List<Generic<T>> holders) {
 			this.generics = holders;
@@ -316,6 +307,9 @@ class SerializationCompatTestData {
 
 	static class GenericArray<T> {
 		Generic<T>[] holders;
+		
+		public GenericArray() {
+		}
 
 		public GenericArray (final Generic<T>... holders) {
 			this.holders = holders;
@@ -562,6 +556,9 @@ class SerializationCompatTestData {
 
 	private static class PrivateClass {
 		String foo;
+		
+		PrivateClass() {
+		}
 
 		public PrivateClass (String foo) {
 			this.foo = foo;

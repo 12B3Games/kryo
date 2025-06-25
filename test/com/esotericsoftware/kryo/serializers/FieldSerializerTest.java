@@ -38,6 +38,7 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer.Bind;
 import com.esotericsoftware.kryo.serializers.FieldSerializer.NotNull;
 import com.esotericsoftware.kryo.serializers.FieldSerializer.Optional;
 import com.esotericsoftware.kryo.serializers.MapSerializer.BindMap;
+import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
 import com.esotericsoftware.kryo.util.Util;
 
 import java.io.ByteArrayOutputStream;
@@ -51,7 +52,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 /** @author Nathan Sweet */
 @SuppressWarnings("synthetic-access")
@@ -384,13 +384,8 @@ class FieldSerializerTest extends KryoTestCase {
 
 	@Test
 	void testInstantiatorStrategy () {
-		kryo.register(HasArgumentConstructor.class);
-		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
-		HasArgumentConstructor test = new HasArgumentConstructor("cow");
-		roundTrip(4, test);
-
 		kryo.register(HasPrivateConstructor.class);
-		test = new HasPrivateConstructor();
+		HasArgumentConstructor test = new HasPrivateConstructor();
 		roundTrip(4, test);
 	}
 
@@ -403,21 +398,7 @@ class FieldSerializerTest extends KryoTestCase {
 
 		kryo.register(HasPrivateConstructor.class);
 		roundTrip(4, test);
-		assertEquals(Util.isUnsafeAvailable() ? 20 : 10, HasPrivateConstructor.invocations, "Wrong number of constructor invocations");
-	}
-
-	/** This test uses StdInstantiatorStrategy and should bypass invocation of no-arg constructor, even if it is provided. **/
-	@Test
-	void testStdInstantiatorStrategy () {
-		kryo.register(HasArgumentConstructor.class);
-		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
-		HasArgumentConstructor test = new HasPrivateConstructor();
-		HasPrivateConstructor.invocations = 0;
-
-		kryo.register(HasPrivateConstructor.class);
-		roundTrip(4, test);
-		assertEquals(0, HasPrivateConstructor.invocations,
-			"Default constructor should not be invoked with StdInstantiatorStrategy strategy");
+		assertEquals(10, HasPrivateConstructor.invocations, "Wrong number of constructor invocations");
 	}
 
 	@Test

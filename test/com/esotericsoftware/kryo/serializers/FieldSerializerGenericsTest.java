@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.Test;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 class FieldSerializerGenericsTest extends KryoTestCase {
 	@Test
@@ -116,7 +115,7 @@ class FieldSerializerGenericsTest extends KryoTestCase {
 
 	@Test
 	void testNestedLists () {
-		kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+		kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy());
 
 		// Increase generics savings so difference is more easily seen.
 		FieldSerializerConfig config = new FieldSerializerConfig();
@@ -242,6 +241,9 @@ class FieldSerializerGenericsTest extends KryoTestCase {
 
 	public static final class NestedListValue<T> {
 		public T value;
+		
+		public NestedListValue() {
+		}
 
 		public NestedListValue (T value) {
 			this.value = value;

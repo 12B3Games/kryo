@@ -37,23 +37,6 @@ import java.util.Map;
 public class Util {
 	public static final boolean isAndroid = "Dalvik".equals(System.getProperty("java.vm.name"));
 
-	/** True if Unsafe is available. Unsafe can be disabled by setting the system property "kryo.unsafe" to "false". */
-	public static final boolean unsafe;
-	static {
-		boolean found = false;
-		if ("false".equals(System.getProperty("kryo.unsafe"))) {
-			if (TRACE) trace("kryo", "Unsafe is disabled.");
-		} else {
-			try {
-				found = Class.forName("com.esotericsoftware.kryo.unsafe.UnsafeUtil", true, FieldSerializer.class.getClassLoader())
-					.getField("unsafe").get(null) != null;
-			} catch (Throwable ex) {
-				if (TRACE) trace("kryo", "Unsafe is unavailable.", ex);
-			}
-		}
-		unsafe = found;
-	}
-
 	// Maximum reasonable array length. See: https://stackoverflow.com/questions/3038392/do-java-arrays-have-a-maximum-size
 	public static final int maxArraySize = Integer.MAX_VALUE - 8;
 
@@ -67,10 +50,6 @@ public class Util {
 		primitiveWrappers.put(int.class, Integer.class);
 		primitiveWrappers.put(long.class, Long.class);
 		primitiveWrappers.put(short.class, Short.class);
-	}
-
-	public static boolean isUnsafeAvailable () {
-		return unsafe;
 	}
 
 	public static boolean isClassAvailable (String className) {

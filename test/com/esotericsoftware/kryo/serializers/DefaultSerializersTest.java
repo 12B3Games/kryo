@@ -54,7 +54,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 /** @author Nathan Sweet */
 class DefaultSerializersTest extends KryoTestCase {
@@ -499,15 +498,6 @@ class DefaultSerializersTest extends KryoTestCase {
 		ConcurrentHashMap.KeySetView<String, Integer> copy = kryo.copy(set);
 		assertEquals(set.iterator().next(), copy.iterator().next());
 		assertEquals(set.getMappedValue(), copy.getMappedValue());
-	}
-
-	@Test
-	void testCalendar () {
-		kryo.setRegistrationRequired(false);
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
-		calendar.set(1980, 7, 26, 12, 22, 46);
-		roundTrip(64, calendar);
 	}
 
 	@Test

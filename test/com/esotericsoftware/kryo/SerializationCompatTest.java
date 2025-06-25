@@ -43,7 +43,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 /** Test for serialization compatibility: data serialized with an older version (same major version) must be deserializable with
  * this newer (same major) version. Serialization compatibility is checked for each type that has a default serializer
@@ -83,15 +82,14 @@ class SerializationCompatTest extends KryoTestCase {
 			JAVA_VERSION = versions[0] > 1 ? versions[0] : versions[1];
 		}
 	}
-	private static final int EXPECTED_DEFAULT_SERIALIZER_COUNT = JAVA_VERSION < 11
-			? 58 : JAVA_VERSION < 14 ? 68 : 69;  // Also change Kryo#defaultSerializers.
+	private static final int EXPECTED_DEFAULT_SERIALIZER_COUNT = 41;  // Also change Kryo#defaultSerializers.
 	private static final List<TestDataDescription> TEST_DATAS = new ArrayList<>();
 
 	static {
-		TEST_DATAS.add(new TestDataDescription<>(new TestData(), 1940, 1958));
-		if (JAVA_VERSION >= 8) TEST_DATAS.add(new TestDataDescription<>(new TestDataJava8(), 2098, 2116));
-		if (JAVA_VERSION >= 11) TEST_DATAS.add(new TestDataDescription<>(createTestData(11), 2182, 2210));
-		if (JAVA_VERSION >= 17) TEST_DATAS.add(new TestDataDescription<>(createTestData(17), 1948, 1966));
+		TEST_DATAS.add(new TestDataDescription<>(new TestData(), 1885, 1903));
+//		if (JAVA_VERSION >= 8) TEST_DATAS.add(new TestDataDescription<>(new TestDataJava8(), 2098, 2116));
+//		if (JAVA_VERSION >= 11) TEST_DATAS.add(new TestDataDescription<>(createTestData(11), 2182, 2210));
+//		if (JAVA_VERSION >= 17) TEST_DATAS.add(new TestDataDescription<>(createTestData(17), 1948, 1966));
 	};
 
 	private static TestData createTestData(int version) {
@@ -105,7 +103,7 @@ class SerializationCompatTest extends KryoTestCase {
 	@BeforeEach
 	public void setUp () throws Exception {
 		super.setUp();
-		kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+		kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy());
 		kryo.setReferences(true);
 		kryo.setRegistrationRequired(false);
 		// We register EnumSet so that the EnumSet implementation class name is not written: EnumSet implementations

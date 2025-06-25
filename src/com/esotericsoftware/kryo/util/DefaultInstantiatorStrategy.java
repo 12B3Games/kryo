@@ -50,33 +50,34 @@ public class DefaultInstantiatorStrategy implements org.objenesis.strategy.Insta
 
 	public ObjectInstantiator newInstantiatorOf (final Class type) {
 
-		if (!Util.isAndroid) {
-			// Use ReflectASM if the class is not a non-static member class.
-			Class enclosingType = type.getEnclosingClass();
-			boolean isNonStaticMemberClass = enclosingType != null && type.isMemberClass()
-				&& !Modifier.isStatic(type.getModifiers());
-			if (!isNonStaticMemberClass) {
-				try {
-					final ConstructorAccess access = ConstructorAccess.get(type);
-					return new ObjectInstantiator() {
-						public Object newInstance () {
-							try {
-								return access.newInstance();
-							} catch (Exception | InstantiationError ex) {
-								throw createInstantiationError(type, ex);
-							}
-						}
-					};
-				} catch (Exception ignored) {
-				}
-			}
-		}
+//		if (!Util.isAndroid) {
+//			// Use ReflectASM if the class is not a non-static member class.
+//			Class enclosingType = type.getEnclosingClass();
+//			boolean isNonStaticMemberClass = enclosingType != null && type.isMemberClass()
+//				&& !Modifier.isStatic(type.getModifiers());
+//			if (!isNonStaticMemberClass) {
+//				try {
+//					final ConstructorAccess access = ConstructorAccess.get(type);
+//					return new ObjectInstantiator() {
+//						public Object newInstance () {
+//							try {
+//								return access.newInstance();
+//							} catch (Exception | InstantiationError ex) {
+//								throw createInstantiationError(type, ex);
+//							}
+//						}
+//					};
+//				} catch (Exception ignored) {
+//				}
+//			}
+//		}
 
 		// Reflection.
 		try {
 			Constructor ctor;
 			try {
 				ctor = type.getConstructor((Class[])null);
+				ctor.setAccessible(true);
 			} catch (Exception ex) {
 				ctor = type.getDeclaredConstructor((Class[])null);
 				ctor.setAccessible(true);

@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 class ParallelSerializationTest {
 
@@ -41,7 +40,7 @@ class ParallelSerializationTest {
 			Kryo kryo = new Kryo();
 			kryo.setRegistrationRequired(false);
 			kryo.setReferences(true);
-			kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+			kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy());
 			return kryo;
 		}
 	};
@@ -85,6 +84,10 @@ class ParallelSerializationTest {
 	static class TestClass {
 
 		private final GenericSuperClass<String> value;
+		
+		private TestClass() {
+			value = null;
+		}
 
 		public TestClass(GenericSuperClass<String> value) {
 			this.value = value;
@@ -113,6 +116,10 @@ class ParallelSerializationTest {
 
 	static class GenericClass<T> extends GenericSuperClass<T> {
 		private final T value;
+		
+		GenericClass() {
+			this.value = null;
+		}
 
 		public GenericClass(T value) {
 			this.value = value;

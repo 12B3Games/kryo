@@ -676,43 +676,6 @@ public class DefaultSerializers {
 		}
 	}
 
-	/** Serializer for {@link GregorianCalendar}, java.util.JapaneseImperialCalendar, and sun.util.BuddhistCalendar.
-	 * @author Tumi <serverperformance@gmail.com> */
-	public static class CalendarSerializer extends Serializer<Calendar> {
-		// The default value of gregorianCutover.
-		private static final long DEFAULT_GREGORIAN_CUTOVER = -12219292800000L;
-
-		TimeZoneSerializer timeZoneSerializer = new TimeZoneSerializer();
-
-		public void write (Kryo kryo, Output output, Calendar object) {
-			timeZoneSerializer.write(kryo, output, object.getTimeZone()); // can't be null
-			output.writeVarLong(object.getTimeInMillis(), true);
-			output.writeBoolean(object.isLenient());
-			output.writeInt(object.getFirstDayOfWeek(), true);
-			output.writeInt(object.getMinimalDaysInFirstWeek(), true);
-			if (object instanceof GregorianCalendar)
-				output.writeVarLong(((GregorianCalendar)object).getGregorianChange().getTime(), false);
-			else
-				output.writeVarLong(DEFAULT_GREGORIAN_CUTOVER, false);
-		}
-
-		public Calendar read (Kryo kryo, Input input, Class<? extends Calendar> type) {
-			Calendar result = Calendar.getInstance(timeZoneSerializer.read(kryo, input, TimeZone.class));
-			result.setTimeInMillis(input.readVarLong(true));
-			result.setLenient(input.readBoolean());
-			result.setFirstDayOfWeek(input.readInt(true));
-			result.setMinimalDaysInFirstWeek(input.readInt(true));
-			long gregorianChange = input.readVarLong(false);
-			if (gregorianChange != DEFAULT_GREGORIAN_CUTOVER)
-				if (result instanceof GregorianCalendar) ((GregorianCalendar)result).setGregorianChange(new Date(gregorianChange));
-			return result;
-		}
-
-		public Calendar copy (Kryo kryo, Calendar original) {
-			return (Calendar)original.clone();
-		}
-	}
-
 	/** Serializer for {@link TreeMap} and any subclass.
 	 * @author Tumi <serverperformance@gmail.com> (enhacements) */
 	public static class TreeMapSerializer extends MapSerializer<TreeMap> {

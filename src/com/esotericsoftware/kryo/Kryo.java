@@ -27,9 +27,8 @@ import com.esotericsoftware.kryo.SerializerFactory.ReflectionSerializerFactory;
 import com.esotericsoftware.kryo.SerializerFactory.SingletonSerializerFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.ClosureSerializer;
+import com.esotericsoftware.kryo.serializers.*;
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure;
-import com.esotericsoftware.kryo.serializers.CollectionSerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.BooleanArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.ByteArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.CharArraySerializer;
@@ -40,49 +39,7 @@ import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.LongArraySe
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.ObjectArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.ShortArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.StringArraySerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.ArraysAsListSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.BigDecimalSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.BigIntegerSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.BitSetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.BooleanSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.ByteSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CalendarSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CharSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CharsetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.ClassSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptyListSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptyMapSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsEmptySetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonListSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonMapSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CollectionsSingletonSetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.ConcurrentSkipListMapSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.CurrencySerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.DateSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.DoubleSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.EnumSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.EnumSetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.FloatSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.IntSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.LocaleSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.LongSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.PriorityQueueSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.ShortSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringBufferSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringBuilderSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.TimeZoneSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.TreeMapSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.TreeSetSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.URLSerializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.VoidSerializer;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
-import com.esotericsoftware.kryo.serializers.ImmutableCollectionsSerializers;
-import com.esotericsoftware.kryo.serializers.MapSerializer;
-import com.esotericsoftware.kryo.serializers.OptionalSerializers;
-import com.esotericsoftware.kryo.serializers.RecordSerializer;
-import com.esotericsoftware.kryo.serializers.TimeSerializers;
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.*;
 import com.esotericsoftware.kryo.util.DefaultClassResolver;
 import com.esotericsoftware.kryo.util.DefaultGenerics;
 import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
@@ -120,11 +77,11 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.objenesis.instantiator.ObjectInstantiator;
 import org.objenesis.strategy.InstantiatorStrategy;
-import org.objenesis.strategy.SerializingInstantiatorStrategy;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 /** Maps classes to serializers so object graphs can be serialized automatically.
  * @author Nathan Sweet */
@@ -218,7 +175,6 @@ public class Kryo {
 		addDefaultSerializer(TreeMap.class, TreeMapSerializer.class);
 		addDefaultSerializer(Map.class, MapSerializer.class);
 		addDefaultSerializer(TimeZone.class, TimeZoneSerializer.class);
-		addDefaultSerializer(Calendar.class, CalendarSerializer.class);
 		addDefaultSerializer(Locale.class, LocaleSerializer.class);
 		addDefaultSerializer(Charset.class, CharsetSerializer.class);
 		addDefaultSerializer(URL.class, URLSerializer.class);
@@ -227,13 +183,8 @@ public class Kryo {
 		addDefaultSerializer(PriorityQueue.class, new PriorityQueueSerializer());
 		addDefaultSerializer(BitSet.class, new BitSetSerializer());
 		addDefaultSerializer(KryoSerializable.class, KryoSerializableSerializer.class);
-		OptionalSerializers.addDefaultSerializers(this);
-		TimeSerializers.addDefaultSerializers(this);
-		ImmutableCollectionsSerializers.addDefaultSerializers(this);
-		// Add RecordSerializer if JDK 14+ available
-		if (isClassAvailable("java.lang.Record")) {
-			addDefaultSerializer("java.lang.Record", RecordSerializer.class);
-		}
+		addDefaultSerializer(AtomicInteger.class, AtomicIntegerSerializer.class);
+		addDefaultSerializer(AtomicLong.class, AtomicLongSerializer.class);
 		lowPriorityDefaultSerializerCount = defaultSerializers.size();
 
 		// Primitives and string. Primitive wrappers automatically use the same registration as primitives.
