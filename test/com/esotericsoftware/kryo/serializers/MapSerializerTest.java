@@ -149,7 +149,7 @@ class MapSerializerTest extends KryoTestCase {
         map.put(9, "456");
         map.put(3, "abc");
         map.put(1, 122);
-        roundTrip(20, map);
+        roundTrip(19, map);
 
         kryo.register(KeyThatIsntComparable.class);
         kryo.register(KeyComparator.class);

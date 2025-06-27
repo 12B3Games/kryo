@@ -62,8 +62,6 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -370,15 +368,6 @@ public class DefaultSerializers {
 			if (type == Date.class || type == null) {
 				return new Date(time);
 			}
-			if (type == Timestamp.class) {
-				return new Timestamp(time);
-			}
-			if (type == java.sql.Date.class) {
-				return new java.sql.Date(time);
-			}
-			if (type == Time.class) {
-				return new Time(time);
-			}
 			// other cases, reflection
 			try {
 				// Try to avoid invoking the no-args constructor
@@ -409,32 +398,6 @@ public class DefaultSerializers {
 
 		public Date copy (Kryo kryo, Date original) {
 			return create(kryo, original.getClass(), original.getTime());
-		}
-	}
-
-	/** Serializer for {@link Timestamp} which preserves the nanoseconds field. */
-	public static class TimestampSerializer extends Serializer<Timestamp> {
-		public void write (Kryo kryo, Output output, Timestamp object) {
-			output.writeVarLong(integralTimeComponent(object), true);
-			output.writeVarInt(object.getNanos(), true);
-		}
-
-		public Timestamp read (Kryo kryo, Input input, Class<? extends Timestamp> type) {
-			return create(input.readVarLong(true), input.readVarInt(true));
-		}
-
-		public Timestamp copy (Kryo kryo, Timestamp original) {
-			return create(integralTimeComponent(original), original.getNanos());
-		}
-
-		private long integralTimeComponent (Timestamp object) {
-			return object.getTime() - (object.getNanos() / 1_000_000);
-		}
-
-		private Timestamp create (long time, int nanos) {
-			Timestamp t = new Timestamp(time);
-			t.setNanos(nanos);
-			return t;
 		}
 	}
 
@@ -502,23 +465,6 @@ public class DefaultSerializers {
 
 		public EnumSet copy (Kryo kryo, EnumSet original) {
 			return EnumSet.copyOf(original);
-		}
-	}
-
-	/** @author <a href="mailto:martin.grotzke@javakaffee.de">Martin Grotzke</a> */
-	public static class CurrencySerializer extends ImmutableSerializer<Currency> {
-		{
-			setAcceptsNull(true);
-		}
-
-		public void write (Kryo kryo, Output output, Currency object) {
-			output.writeString(object == null ? null : object.getCurrencyCode());
-		}
-
-		public Currency read (Kryo kryo, Input input, Class<? extends Currency> type) {
-			String currencyCode = input.readString();
-			if (currencyCode == null) return null;
-			return Currency.getInstance(currencyCode);
 		}
 	}
 
@@ -709,46 +655,6 @@ public class DefaultSerializers {
 		}
 	}
 
-	/** Serializer for {@link ConcurrentSkipListMap} and any subclass.
-	 * @author Mr14huashao <mr11huashao@gmail.com> (enhacements) */
-	public static class ConcurrentSkipListMapSerializer extends MapSerializer<ConcurrentSkipListMap> {
-		@Override
-		protected void writeHeader (Kryo kryo, Output output, ConcurrentSkipListMap concurrentSkipListMap) {
-			kryo.writeClassAndObject(output, concurrentSkipListMap.comparator());
-		}
-
-		@Override
-		protected ConcurrentSkipListMap create (Kryo kryo, Input input, Class<? extends ConcurrentSkipListMap> type,
-			int size) {
-			return createConcurrentSkipListMap(type, (Comparator)kryo.readClassAndObject(input));
-		}
-
-		@Override
-		protected ConcurrentSkipListMap createCopy (Kryo kryo, ConcurrentSkipListMap original) {
-			return createConcurrentSkipListMap(original.getClass(), original.comparator());
-		}
-
-		private ConcurrentSkipListMap createConcurrentSkipListMap (Class<? extends ConcurrentSkipListMap> type,
-			Comparator comparator) {
-			if (type == ConcurrentSkipListMap.class || type == null) {
-				return new ConcurrentSkipListMap(comparator);
-			}
-			// Use reflection for subclasses.
-			try {
-				Constructor constructor = type.getConstructor(Comparator.class);
-				if (!constructor.isAccessible()) {
-					try {
-						constructor.setAccessible(true);
-					} catch (SecurityException ignored) {
-					}
-				}
-				return (ConcurrentSkipListMap)constructor.newInstance(comparator);
-			} catch (Exception ex) {
-				throw new KryoException(ex);
-			}
-		}
-	}
-
 	/** Serializer for {@link TreeMap} and any subclass.
 	 * @author Tumi <serverperformance@gmail.com> (enhacements) */
 	public static class TreeSetSerializer extends CollectionSerializer<TreeSet> {
@@ -813,27 +719,6 @@ public class DefaultSerializers {
 			} catch (Exception ex) {
 				throw new KryoException(ex);
 			}
-		}
-	}
-
-	/** Serializer for {@link ConcurrentHashMap.KeySetView}.
-	 * @author Andreas Bergander */
-	public static class KeySetViewSerializer extends Serializer<ConcurrentHashMap.KeySetView> {
-		public void write (Kryo kryo, Output output, ConcurrentHashMap.KeySetView set) {
-			kryo.writeClassAndObject(output, set.getMap());
-			kryo.writeClassAndObject(output, set.getMappedValue());
-		}
-
-		public ConcurrentHashMap.KeySetView read (Kryo kryo, Input input, Class<? extends ConcurrentHashMap.KeySetView> type) {
-			return createKeySetView((ConcurrentHashMap)kryo.readClassAndObject(input), kryo.readClassAndObject(input));
-		}
-
-		public ConcurrentHashMap.KeySetView copy (Kryo kryo, ConcurrentHashMap.KeySetView original) {
-			return createKeySetView(kryo.copy(original.getMap()), kryo.copy(original.getMappedValue()));
-		}
-
-		private ConcurrentHashMap.KeySetView createKeySetView (ConcurrentHashMap map, Object mappedValue) {
-			return map.keySet(mappedValue);
 		}
 	}
 

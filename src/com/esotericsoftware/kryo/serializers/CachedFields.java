@@ -26,15 +26,6 @@ import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.SerializerFactory;
 import com.esotericsoftware.kryo.SerializerFactory.ReflectionSerializerFactory;
-import com.esotericsoftware.kryo.serializers.AsmField.BooleanAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.ByteAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.CharAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.DoubleAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.FloatAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.IntAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.LongAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.ShortAsmField;
-import com.esotericsoftware.kryo.serializers.AsmField.StringAsmField;
 import com.esotericsoftware.kryo.serializers.FieldSerializer.Bind;
 import com.esotericsoftware.kryo.serializers.FieldSerializer.CachedField;
 import com.esotericsoftware.kryo.serializers.FieldSerializer.FieldSerializerConfig;
@@ -49,7 +40,6 @@ import com.esotericsoftware.kryo.serializers.ReflectField.IntReflectField;
 import com.esotericsoftware.kryo.serializers.ReflectField.LongReflectField;
 import com.esotericsoftware.kryo.serializers.ReflectField.ShortReflectField;
 import com.esotericsoftware.kryo.util.Generics.GenericType;
-import com.esotericsoftware.reflectasm.FieldAccess;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -68,7 +58,6 @@ class CachedFields implements Comparator<CachedField> {
 	CachedField[] fields = new CachedField[0];
 	CachedField[] copyFields = new CachedField[0];
 	private final ArrayList<Field> removedFields = new ArrayList();
-	private Object access;
 
 	public CachedFields (FieldSerializer serializer) {
 		this.serializer = serializer;
@@ -83,11 +72,10 @@ class CachedFields implements Comparator<CachedField> {
 		}
 
 		ArrayList<CachedField> newFields = new ArrayList(), newCopyFields = new ArrayList();
-		boolean asm = !isAndroid && Modifier.isPublic(serializer.type.getModifiers());
 		Class nextClass = serializer.type;
 		while (nextClass != Object.class) {
 			for (Field field : nextClass.getDeclaredFields())
-				addField(field, asm, newFields, newCopyFields);
+				addField(field, newFields, newCopyFields);
 			nextClass = nextClass.getSuperclass();
 		}
 
@@ -102,7 +90,7 @@ class CachedFields implements Comparator<CachedField> {
 		serializer.initializeCachedFields();
 	}
 
-	private void addField (Field field, boolean asm, ArrayList<CachedField> fields, ArrayList<CachedField> copyFields) {
+	private void addField (Field field, ArrayList<CachedField> fields, ArrayList<CachedField> copyFields) {
 		int modifiers = field.getModifiers();
 		if (Modifier.isStatic(modifiers)) return;
 		FieldSerializerConfig config = serializer.config;
@@ -129,26 +117,7 @@ class CachedFields implements Comparator<CachedField> {
 		Class declaringClass = field.getDeclaringClass();
 		GenericType genericType = new GenericType(declaringClass, serializer.type, field.getGenericType());
 		Class fieldClass = genericType.getType() instanceof Class ? (Class)genericType.getType() : field.getType();
-		int accessIndex = -1;
-		if (asm //
-			&& !Modifier.isFinal(modifiers) //
-			&& Modifier.isPublic(modifiers) //
-			&& Modifier.isPublic(fieldClass.getModifiers())) {
-			try {
-				if (access == null) access = FieldAccess.get(serializer.type);
-				accessIndex = ((FieldAccess)access).getIndex(field);
-			} catch (RuntimeException | LinkageError ex) {
-				if (DEBUG) debug("kryo", "Unable to use ReflectASM.", ex);
-			}
-		}
-
-		CachedField cachedField;
-//		if (accessIndex != -1) {
-//			cachedField = newAsmField(field, fieldClass, genericType);
-//			cachedField.access = (FieldAccess)access;
-//			cachedField.accessIndex = accessIndex;
-//		} else
-			cachedField = newReflectField(field, fieldClass, genericType);
+		CachedField cachedField = newReflectField(field, fieldClass, genericType);
 
 		cachedField.varEncoding = config.varEncoding;
 		if (config.extendedFieldNames)
@@ -181,23 +150,6 @@ class CachedFields implements Comparator<CachedField> {
 			fields.add(cachedField);
 			copyFields.add(cachedField);
 		}
-	}
-
-	private CachedField newAsmField (Field field, Class fieldClass, GenericType genericType) {
-		if (fieldClass.isPrimitive()) {
-			if (fieldClass == int.class) return new IntAsmField(field);
-			if (fieldClass == float.class) return new FloatAsmField(field);
-			if (fieldClass == boolean.class) return new BooleanAsmField(field);
-			if (fieldClass == long.class) return new LongAsmField(field);
-			if (fieldClass == double.class) return new DoubleAsmField(field);
-			if (fieldClass == short.class) return new ShortAsmField(field);
-			if (fieldClass == char.class) return new CharAsmField(field);
-			if (fieldClass == byte.class) return new ByteAsmField(field);
-		}
-		if (fieldClass == String.class
-			&& (!serializer.kryo.getReferences() || !serializer.kryo.getReferenceResolver().useReferences(String.class)))
-			return new StringAsmField(field);
-		return new AsmField(field, serializer, genericType);
 	}
 
 	private CachedField newReflectField (Field field, Class fieldClass, GenericType genericType) {

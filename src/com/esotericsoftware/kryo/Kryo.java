@@ -28,7 +28,6 @@ import com.esotericsoftware.kryo.SerializerFactory.SingletonSerializerFactory;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.*;
-import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.BooleanArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.ByteArraySerializer;
 import com.esotericsoftware.kryo.serializers.DefaultArraySerializers.CharArraySerializer;
@@ -160,7 +159,6 @@ public class Kryo {
 		addDefaultSerializer(Date.class, DateSerializer.class);
 		addDefaultSerializer(Enum.class, EnumSerializer.class);
 		addDefaultSerializer(EnumSet.class, EnumSetSerializer.class);
-		addDefaultSerializer(Currency.class, CurrencySerializer.class);
 		addDefaultSerializer(StringBuffer.class, StringBufferSerializer.class);
 		addDefaultSerializer(StringBuilder.class, StringBuilderSerializer.class);
 		addDefaultSerializer(Collections.EMPTY_LIST.getClass(), CollectionsEmptyListSerializer.class);
@@ -171,7 +169,6 @@ public class Kryo {
 		addDefaultSerializer(Collections.singleton(null).getClass(), CollectionsSingletonSetSerializer.class);
 		addDefaultSerializer(TreeSet.class, TreeSetSerializer.class);
 		addDefaultSerializer(Collection.class, CollectionSerializer.class);
-		addDefaultSerializer(ConcurrentSkipListMap.class, ConcurrentSkipListMapSerializer.class);
 		addDefaultSerializer(TreeMap.class, TreeMapSerializer.class);
 		addDefaultSerializer(Map.class, MapSerializer.class);
 		addDefaultSerializer(TimeZone.class, TimeZoneSerializer.class);
@@ -524,8 +521,6 @@ public class Kryo {
 				}
 			} else if (EnumSet.class.isAssignableFrom(type))
 				registration = classResolver.getRegistration(EnumSet.class);
-			else if (isClosure(type)) //
-				registration = classResolver.getRegistration(ClosureSerializer.Closure.class);
 			if (registration == null) {
 				if (registrationRequired) throw new IllegalArgumentException(unregisteredClassMessage(type));
 				if (WARN && warnUnregisteredClasses) warn(unregisteredClassMessage(type));

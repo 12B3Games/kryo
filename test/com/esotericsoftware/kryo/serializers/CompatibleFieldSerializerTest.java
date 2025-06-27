@@ -498,7 +498,6 @@ class CompatibleFieldSerializerTest extends KryoTestCase {
 		CompatibleFieldSerializer.CompatibleFieldSerializerConfig config = new CompatibleFieldSerializer.CompatibleFieldSerializerConfig();
 		kryo.setDefaultSerializer(new CompatibleFieldSerializerFactory(config));
 		kryo.register(ClassWithLambdaField.class);
-		kryo.register(ClosureSerializer.Closure.class, new ClosureSerializer());
 
 		roundTrip(236, new ClassWithLambdaField());
 	}

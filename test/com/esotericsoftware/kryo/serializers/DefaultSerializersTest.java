@@ -26,7 +26,6 @@ import com.esotericsoftware.kryo.KryoTestCase;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.KeySetViewSerializer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -233,28 +232,6 @@ class DefaultSerializersTest extends KryoTestCase {
 	}
 
 	@Test
-	void testTimestampSerializer () {
-		kryo.addDefaultSerializer(java.sql.Timestamp.class, DefaultSerializers.TimestampSerializer.class);
-		kryo.register(java.sql.Timestamp.class);
-		roundTrip(11, newTimestamp(Long.MIN_VALUE+808, 0)); // Smallest valid size
-		roundTrip(15, newTimestamp(Long.MIN_VALUE+808, 999_999_999));
-		roundTrip(11, newTimestamp(Long.MAX_VALUE, 0));
-		roundTrip(14, newTimestamp(Long.MAX_VALUE, 268_435_455)); // Largest valid size
-		roundTrip(3, newTimestamp(0, 0));
-		roundTrip(7, newTimestamp(0, 999_999_999));
-		roundTrip(8, newTimestamp(1234567, 123_456_789));
-		roundTrip(11, newTimestamp(-1234567, 0));
-		roundTrip(11, newTimestamp(-1234567, 1));
-		roundTrip(14, newTimestamp(-1234567, 123_456_789));
-	}
-
-	private java.sql.Timestamp newTimestamp(long time, int nanos) {
-		java.sql.Timestamp t = new java.sql.Timestamp(time);
-		t.setNanos(nanos);
-		return t;
-	}
-
-	@Test
 	void testBigDecimalSerializer () {
 		kryo.register(BigDecimal.class);
 		kryo.register(BigDecimalSubclass.class);
@@ -451,53 +428,6 @@ class DefaultSerializersTest extends KryoTestCase {
 		PriorityQueue<Integer> queue = new PriorityQueueSubclass();
 		kryo.register(PriorityQueueSubclass.class);
 		roundTrip(3, queue);
-	}
-
-	@Test
-	void testConcurrentHashMapKeySetView () {
-		ConcurrentHashMap.KeySetView<Integer, Boolean> set = ConcurrentHashMap.newKeySet();
-		set.add(12);
-		kryo.register(ConcurrentHashMap.KeySetView.class, new KeySetViewSerializer());
-		kryo.register(ConcurrentHashMap.class);
-		roundTrip(9, set);
-	}
-
-	@Test
-	void testConcurrentHashMapKeySetViewFromExistingMap () {
-		ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
-
-		map.put("1", 1);
-		map.put("2", 2);
-
-		ConcurrentHashMap.KeySetView<String, Integer> set = map.keySet(4);
-
-		kryo.register(ConcurrentHashMap.KeySetView.class, new KeySetViewSerializer());
-		kryo.register(ConcurrentHashMap.class);
-		roundTrip(15, set);
-	}
-
-	@Test
-	void testEmptyConcurrentHashMapKeySetView () {
-		ConcurrentHashMap.KeySetView set = ConcurrentHashMap.newKeySet();
-		kryo.register(ConcurrentHashMap.KeySetView.class, new KeySetViewSerializer());
-		kryo.register(ConcurrentHashMap.class);
-		roundTrip(5, set);
-	}
-
-	@Test
-	void testConcurrentHashMapKeySetViewCopy () {
-		ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
-
-		map.put("1", 1);
-		map.put("2", 2);
-
-		ConcurrentHashMap.KeySetView<String, Integer> set = map.keySet(4);
-
-		kryo.register(ConcurrentHashMap.KeySetView.class, new KeySetViewSerializer());
-		kryo.register(ConcurrentHashMap.class);
-		ConcurrentHashMap.KeySetView<String, Integer> copy = kryo.copy(set);
-		assertEquals(set.iterator().next(), copy.iterator().next());
-		assertEquals(set.getMappedValue(), copy.getMappedValue());
 	}
 
 	@Test

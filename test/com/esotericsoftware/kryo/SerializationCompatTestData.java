@@ -143,7 +143,6 @@ class SerializationCompatTestData {
 
 		private Gender _enum;
 		private EnumSet<Gender> _enumSet;
-		private Currency _currency;
 
 		private List<String> _emptyList = Collections.emptyList();
 		private Set<String> _emptySet = Collections.emptySet();
@@ -219,8 +218,6 @@ class SerializationCompatTestData {
 
 			_enum = Gender.FEMALE;
 			_enumSet = EnumSet.allOf(Gender.class);
-
-			_currency = Currency.getInstance("EUR");
 
 			_emptyList = Collections.emptyList();
 			_emptySet = Collections.emptySet();

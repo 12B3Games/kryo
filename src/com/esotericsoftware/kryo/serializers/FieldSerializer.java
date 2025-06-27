@@ -31,7 +31,6 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.Generics;
 import com.esotericsoftware.kryo.util.Generics.GenericType;
 import com.esotericsoftware.kryo.util.Generics.GenericsHierarchy;
-import com.esotericsoftware.reflectasm.FieldAccess;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -239,13 +238,6 @@ public class FieldSerializer<T> extends Serializer<T> {
 		Class valueClass;
 		Serializer serializer;
 		boolean canBeNull, varEncoding = true, optimizePositive, reuseSerializer = true;
-
-		// For AsmField.
-		FieldAccess access;
-		int accessIndex = -1;
-
-		// For UnsafeField.
-		long offset;
 
 		// For TaggedFieldSerializer.
 		int tag;
